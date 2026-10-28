@@ -9,7 +9,7 @@ import path from "path";
 export const register = async (req, res) => {
     try {
         const { fullname, email, phoneNumber, password, role } = req.body;
-         
+
         if (!fullname || !email || !phoneNumber || !password || !role) {
             return res.status(400).json({
                 message: "Something is missing",
@@ -45,7 +45,7 @@ export const register = async (req, res) => {
             phoneNumber,
             password: hashedPassword,
             role,
-            profile:{
+            profile: {
                 profilePhoto: profilePhoto,
             }
         });
@@ -65,7 +65,7 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
     try {
         const { email, password, role } = req.body;
-        
+
         if (!email || !password || !role) {
             return res.status(400).json({
                 message: "Something is missing",
@@ -109,7 +109,7 @@ export const login = async (req, res) => {
             profile: user.profile
         }
 
-        return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpsOnly: true, sameSite: 'strict' }).json({
+        return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: 'none', secure: true }).json({
             message: `Welcome back ${user.fullname}`,
             user,
             success: true
@@ -131,7 +131,7 @@ export const logout = async (req, res) => {
 export const updateProfile = async (req, res) => {
     try {
         const { fullname, email, phoneNumber, bio, skills } = req.body;
-        
+
         const file = req.file;
         let resumeUrl = "";
         if (file) {
@@ -139,8 +139,8 @@ export const updateProfile = async (req, res) => {
                 const fileUri = getDataUri(file);
                 if (fileUri) {
                     const isPdf = file.mimetype === 'application/pdf' || file.originalname?.toLowerCase().endsWith('.pdf');
-                    const cloudResponse = await cloudinary.uploader.upload(fileUri.content, { 
-                        resource_type: isPdf ? 'raw' : 'auto' 
+                    const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+                        resource_type: isPdf ? 'raw' : 'auto'
                     });
                     resumeUrl = cloudResponse.secure_url;
                 }
@@ -156,7 +156,8 @@ export const updateProfile = async (req, res) => {
                     }
                     const safeName = Date.now() + "-" + file.originalname.replace(/\s+/g, "_");
                     fs.writeFileSync(path.join(uploadDir, safeName), file.buffer);
-                    resumeUrl = `http://localhost:8000/uploads/${safeName}`;
+                    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
+                    resumeUrl = `${backendUrl}/uploads/${safeName}`;
                     console.log("Saved resume locally to:", resumeUrl);
                 } catch (fsErr) {
                     console.error("Local resume upload failed:", fsErr);
@@ -167,7 +168,7 @@ export const updateProfile = async (req, res) => {
 
 
         let skillsArray;
-        if(skills){
+        if (skills) {
             skillsArray = skills.split(",");
         }
         const userId = req.id; // middleware authentication
@@ -180,14 +181,14 @@ export const updateProfile = async (req, res) => {
             })
         }
         // updating data
-        if(fullname) user.fullname = fullname
-        if(email) user.email = email
-        if(phoneNumber)  user.phoneNumber = phoneNumber
-        if(bio) user.profile.bio = bio
-        if(skills) user.profile.skills = skillsArray
-      
+        if (fullname) user.fullname = fullname
+        if (email) user.email = email
+        if (phoneNumber) user.phoneNumber = phoneNumber
+        if (bio) user.profile.bio = bio
+        if (skills) user.profile.skills = skillsArray
+
         // resume comes later here...
-        if(resumeUrl){
+        if (resumeUrl) {
             user.profile.resume = resumeUrl; // save resume url (Cloudinary or local static url)
             user.profile.resumeOriginalName = file.originalname; // Save the original file name
         }
@@ -205,9 +206,9 @@ export const updateProfile = async (req, res) => {
         }
 
         return res.status(200).json({
-            message:"Profile updated successfully.",
+            message: "Profile updated successfully.",
             user,
-            success:true
+            success: true
         })
     } catch (error) {
         console.log(error);
