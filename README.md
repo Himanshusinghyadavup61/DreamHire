@@ -4,6 +4,12 @@
 
 ---
 
+## 🚀 Live Demo
+
+**[https://dreamhire-1-n7n2.onrender.com/](https://dreamhire-1-n7n2.onrender.com/)**
+
+---
+
 ## Key Features
 
 ### For Candidates
@@ -147,3 +153,11 @@
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
+
+---
+
+<div align="center">
+
+Made with ❤️ by **Himanshu Singh Yadav**
+
+</div>
